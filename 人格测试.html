@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SBTI星座人格实验室 | 你的宇宙嘴替</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;700&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-deep: #0f0f17;
+            --bg-card: #1a1a2e;
+            --accent-primary: #e94560;
+            --accent-secondary: #0f3460;
+            --text-primary: #f0f0f0;
+            --text-muted: #a0a0a0;
+            --success: #4cc9f0;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background: var(--bg-deep);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+            position: relative;
+        }
+        /* 启动页 */
+        #intro {
+            text-align: center;
+            animation: fadeIn 1s ease;
+        }
+        #intro h1 {
+            font-family: 'ZCOOL KuaiLe', cursive;
+            font-size: 2.8rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--accent-primary), #ff6b6b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        #intro .subtitle {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            margin-bottom: 3rem;
+            line-height: 1.6;
+        }
+        .start-btn {
+            background: linear-gradient(135deg, var(--accent-primary), #ff6b6b);
+            color: white;
+            border: none;
+            padding: 1rem 3rem;
+            font-size: 1.3rem;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 20px rgba(233, 69, 96, 0.4);
+        }
+        .start-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(233, 69, 96, 0.6);
+        }
+        /* 问卷页 */
+        #quiz {
+            display: none;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: var(--bg-card);
+            border-radius: 3px;
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-primary), var(--success));
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        .question-card {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            animation: slideUp 0.6s ease;
+        }
+        .question-number {
+            color: var(--accent-primary);
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        .question-text {
+            font-size: 1.4rem;
+            line-height: 1.5;
+            margin-bottom: 2rem;
+        }
+        .options {
+            display: grid;
+            gap: 1rem;
+        }
+        .option {
+            background: rgba(255,255,255,0.05);
+            border: 2px solid transparent;
+            border-radius: 12px;
+            padding: 1.2rem 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+        }
+        .option:hover {
+            background: rgba(233, 69, 96, 0.1);
+            border-color: var(--accent-primary);
+        }
+        .option.selected {
+            background: rgba(233, 69, 96, 0.2);
+            border-color: var(--accent-primary);
+        }
+        /* 结果页 */
+        #result {
+            display: none;
+            text-align: center;
+            animation: fadeIn 1s ease;
+        }
+        .result-title {
+            font-family: 'ZCOOL KuaiLe', cursive;
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--accent-primary);
+        }
+        .result-label {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 2rem;
+            padding: 1rem;
+            background: var(--bg-card);
+            border-radius: 15px;
+            display: inline-block;
+        }
+        .result-desc {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: var(--text-muted);
+            max-width: 600px;
+            margin: 0 auto 3rem;
+            text-align: left;
+            padding: 0 1rem;
+        }
+        .restart-btn {
+            background: transparent;
+            color: var(--accent-primary);
+            border: 2px solid var(--accent-primary);
+            padding: 0.8rem 2rem;
+            font-size: 1.1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .restart-btn:hover {
+            background: var(--accent-primary);
+            color: white;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* 星座选择模态框 */
+        #zodiac-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: var(--bg-card);
+            padding: 2.5rem;
+            border-radius: 20px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+        }
+        .zodiac-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+        .zodiac-btn {
+            background: rgba(255,255,255,0.05);
+            border: 2px solid transparent;
+            border-radius: 10px;
+            padding: 0.8rem 0.5rem;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .zodiac-btn:hover {
+            background: rgba(233, 69, 96, 0.1);
+            border-color: var(--accent-primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 启动页 -->
+        <div id="intro">
+            <h1>SBTI星座人格实验室</h1>
+            <p class="subtitle">
+                MBTI过时了，SBTI也该升级了！<br>
+                50道题，解码你的【星座×情绪】双重人格<br>
+                找到你在宇宙中的最佳嘴替
+            </p>
+            <button class="start-btn" onclick="showZodiacModal()">开始测试</button>
+        </div>
+
+        <!-- 星座选择模态框 -->
+        <div id="zodiac-modal">
+            <div class="modal-content">
+                <h2>首先，请选择你的太阳星座</h2>
+                <p style="color: var(--text-muted); margin-bottom: 1rem;">这是生成你专属复合人格的关键一步</p>
+                <div class="zodiac-grid">
+                    <button class="zodiac-btn" onclick="selectZodiac('白羊座')">白羊座</button>
+                    <button class="zodiac-btn" onclick="selectZodiac('金牛座')">金牛座</button>
+                    <button class="zodiac-btn" onclick="selectZodiac('双子座')">双子座</button>
+                    <button class="zodiac-btn" onclick="selectZodiac('巨蟹座')">巨蟹座</button>
+                    <button class="zodiac-btn" onclick="selectZodiac('狮子座')">狮子座</button>
+                    <button class="zodiac-btn" onclick="selectZodiac('处女座')">处女座</button>
+                    <button class="zodiac-btn" onclick="selectZodiac('天秤座')">天秤座</button>
+                    <button class="zodiac-btn" onclick="selectZodiac('天蝎座')">天蝎座</button>
+                    <button class="zodiac-btn" onclick="selectZodiac('射手座')">射手座</button>
+                    <button class="zodiac-btn" onclick="selectZodiac('摩羯座')">摩羯座</button>
+                    <button class="zodiac-btn" onclick="selectZodiac('水瓶座')">水瓶座</button>
+                    <button class="zodiac-btn" onclick="selectZodiac('双鱼座')">双鱼座</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 问卷页 -->
+        <div id="quiz">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress"></div>
+            </div>
+            <div class="question-card">
+                <div class="question-number" id="question-number">问题 1/50</div>
+                <div class="question-text" id="question-text"></div>
+                <div class="options" id="options-container"></div>
+            </div>
+        </div>
+
+        <!-- 结果页 -->
+        <div id="result">
+            <div class="result-title">你的复合人格是</div>
+            <div class="result-label" id="result-label"></div>
+            <div class="result-desc" id="result-desc"></div>
+            <button class="restart-btn" onclick="location.reload()">再测一次（也许会不同）</button>
+            <p style="margin-top: 2rem; color: var(--text-muted); font-size: 0.9rem;">
+                *本测试融合SBTI自嘲精神与星座文化，仅供娱乐，非专业心理测评(citation:7)(citation:9)。<br>
+                扫描下方二维码，分享给朋友一起玩↓
+            </p>
+            <!-- 这里可以放置生成的二维码图片 -->
+        </div>
+    </div>
+
+    <script>
+        // 题库数据（此处仅展示结构，完整50题需按此格式填充）
+        const questions = [
+            // 第一部分：SBTI题 (1-30)
+            {
+                type: 'sbt',
+                text: '周一早晨，闹钟响后你的状态更接近？',
+                options: [
+                    { text: '垂死病中惊坐起，今天也要加油鸭！', scores: { lie: 0, burn: 0, sober: 2, social: 1 } },
+                    { text: '关掉闹钟，再睡“五分钟”（通常是半小时）。', scores: { lie: 3, burn: 1, sober: 0, social: 0 } },
+                    { text: '睁眼思考：我为什么要上班？宇宙的尽头是编制吗？', scores: { lie: 1, burn: 3, sober: 1, social: 0 } },
+                    { text: '直接请假，与床融为一体。', scores: { lie: 4, burn: 2, sober: 0, social: 0 } }
+                ]
+            },
+            // ... 第2-30题（格式同上）
+            // 第二部分：星座题 (31-45)
+            {
+                type: 'zodiac',
+                text: '如果你精心准备的计划被意外打乱，你的反应更符合你的太阳星座中的？',
+                options: [
+                    { text: '（火象）立刻火大，但气来得快去得也快，马上找新方案。', scores: { fire: 3, earth: 0, air: 1, water: 0 } },
+                    { text: '（土象）感到非常烦躁，需要时间消化情绪，并尝试恢复秩序。', scores: { fire: 0, earth: 3, air: 0, water: 1 } },
+                    { text: '（风象）觉得有点意思，变化本身比原计划更有趣。', scores: { fire: 1, earth: 0, air: 3, water: 0 } },
+                    { text: '（水象）内心戏很多，感到受伤或不安，需要情感支持。', scores: { fire: 0, earth: 1, air: 0, water: 3 } }
+                ]
+            },
+            // ... 第32-45题
+            // 第三部分：混合题 (46-50)
+            {
+                type: 'mix',
+                text: '你发现自己被朋友误解了，而你恰好是（请代入你的星座）一个典型的【巨蟹/摩羯/天秤/白羊】。你此刻的SBTI灵魂会主导你：',
+                options: [
+                    { text: '（内耗组倾向）反复回想哪里出了问题，彻夜难眠。', scores: { lie: 0, burn: 4, sober: 0, social: 1 } },
+                    { text: '（清醒组倾向）冷静分析误会根源，择机理性沟通。', scores: { lie: 0, burn: 0, sober: 4, social: 1 } },
+                    { text: '（摆烂组倾向）“算了，爱咋咋地吧，解释好累。”', scores: { lie: 4, burn: 1, sober: 0, social: 0 } },
+                    { text: '（社交组倾向）立刻找其他朋友倾诉或发个隐晦的朋友圈。', scores: { lie: 0, burn: 1, sober: 0, social: 4 } }
+                ]
+            }
+            // ... 第47-50题
+        ];
+
+        // 结果标签库（示例，需扩充）
+        const resultLabels = {
+            // key格式: 主SBTI倾向-星座元素
+            'burn-water': {
+                label: '巨蟹座·自我攻击者',
+                desc: '你的内心住着一位敏感的诗人和一位严厉的法官。月亮（巨蟹座守护星）的情绪潮汐让你共情力满格，但也容易陷入“是不是我错了”的漩涡。你的爱深沉而保护性强，是朋友中最温暖的港湾，但记得，先照顾好自己的情绪灯塔。'
+            },
+            'lie-fire': {
+                label: '射手座·摆烂行者',
+                desc: '木星（射手座守护星）赋予了你开阔的视野和乐观的底色，但你的行动力可能全部用在了“寻找人生意义”而非“完成手头工作”上。你并非真的懒，只是觉得眼前苟且配不上你诗和远方的灵魂。间歇性踌躇满志，持续性混吃等死，是你的真实写照。'
+            },
+            'sober-air': {
+                label: '水瓶座·人间清醒者',
+                desc: '天王星（水瓶座守护星）给了你抽离的视角和颠覆性的思维。你像个人类观察员，总能一眼看穿事情的本质和荒谬之处。你反感一切虚伪和套路，追求绝对的真实与自由。但有时候，过于清醒也是一种孤独，毕竟，糊涂一点更快乐。'
+            },
+            // ... 为更多组合创建结果
+            'default': {
+                label: '混沌宇宙人',
+                desc: '你的性格光谱过于复杂，连星辰和算法都无法简单定义。你身上同时存在着矛盾的特质，这正是你独一无二的魅力。无需被任何标签束缚，你本身就是个精彩的谜题。'
+            }
+        };
+
+        let currentQuestion = 0;
+        let userScores = { lie: 0, burn: 0, sober: 0, social: 0, fire: 0, earth: 0, air: 0, water: 0 };
+        let userZodiac = '';
+
+        function showZodiacModal() {
+            document.getElementById('zodiac-modal').style.display = 'flex';
+        }
+
+        function selectZodiac(zodiac) {
+            userZodiac = zodiac;
+            document.getElementById('zodiac-modal').style.display = 'none';
+            document.getElementById('intro').style.display = 'none';
+            document.getElementById('quiz').style.display = 'block';
+            showQuestion();
+        }
+
+        function showQuestion() {
+            const q = questions[currentQuestion];
+            document.getElementById('question-number').textContent = `问题 ${currentQuestion + 1}/50`;
+            document.getElementById('question-text').textContent = q.text;
+            
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+            
+            q.options.forEach((opt, index) => {
+                const btn = document.createElement('div');
+                btn.className = 'option';
+                btn.textContent = opt.text;
+                btn.onclick = () => selectOption(index);
+                optionsContainer.appendChild(btn);
+            });
+
+            // 更新进度条
+            const progress = ((currentQuestion) / questions.length) * 100;
+            document.getElementById('progress').style.width = `${progress}%`;
+        }
+
+        function selectOption(optionIndex) {
+            const q = questions[currentQuestion];
+            const scores = q.options[optionIndex].scores;
+            
+            // 累加分数
+            for (let key in scores) {
+                userScores[key] += scores[key];
+            }
+
+            currentQuestion++;
+            if (currentQuestion < questions.length) {
+                showQuestion();
+            } else {
+                showResult();
+            }
+        }
+
+        function showResult() {
+            document.getElementById('quiz').style.display = 'none';
+            document.getElementById('result').style.display = 'block';
+
+            // 计算主要SBTI倾向
+            const sbtScores = { lie: userScores.lie, burn: userScores.burn, sober: userScores.sober, social: userScores.social };
+            const mainSbt = Object.keys(sbtScores).reduce((a, b) => sbtScores[a] > sbtScores[b] ? a : b);
+
+            // 计算主要星座元素倾向 (简化处理，可基于用户选择的星座预设)
+            const zodiacElements = {
+                '白羊座': 'fire', '狮子座': 'fire', '射手座': 'fire',
+                '金牛座': 'earth', '处女座': 'earth', '摩羯座': 'earth',
+                '双子座': 'air', '天秤座': 'air', '水瓶座': 'air',
+                '巨蟹座': 'water', '天蝎座': 'water', '双鱼座': 'water'
+            };
+            const mainElement = zodiacElements[userZodiac] || 'fire'; // 默认
+
+            // 生成结果Key
+            const resultKey = `${mainSbt}-${mainElement}`;
+            const result = resultLabels[resultKey] || resultLabels['default'];
+
+            // 显示结果
+            document.getElementById('result-label').textContent = `${userZodiac}·${result.label}`;
+            document.getElementById('result-desc').textContent = result.desc;
+        }
+    </script>
+</body>
+</html>
